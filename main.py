@@ -1,26 +1,26 @@
 from datetime import datetime, timezone
 
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 
 from models import Note, NoteCreate
 
 app = FastAPI(title="Notes API", version="0.1.0")
 
-# In-memory storage. Will be replaced with a database in a future PR.
-# TODO: Replace with database-generated IDs. Current approach is not safe
-#   under concurrent requests or multiple server instances.
+# TODO: Replace with database-generated IDs. The current approach is not
+#   safe across multiple server instances, and is only race-free here
+#   because the handlers are `async def` (running on a single event loop).
 notes_db: list[Note] = []
 next_id: int = 1
 
 
 @app.get("/notes", response_model=list[Note])
-def list_notes() -> list[Note]:
+async def list_notes() -> list[Note]:
     """Return all notes currently stored."""
     return notes_db
 
 
-@app.post("/notes", response_model=Note, status_code=201)
-def create_note(note_in: NoteCreate) -> Note:
+@app.post("/notes", response_model=Note, status_code=status.HTTP_201_CREATED)
+async def create_note(note_in: NoteCreate) -> Note:
     """Create a new note from the provided title and content."""
     global next_id
     now = datetime.now(timezone.utc)
