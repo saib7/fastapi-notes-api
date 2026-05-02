@@ -25,7 +25,10 @@ class Note(NoteBase):
 
     `from_attributes=True` allows construction from ORM objects in addition to dicts.
     """
+    # Pydantic config is replaced (not merged) on inheritance, so we restate
+    # extra="forbid" alongside from_attributes=True.
     model_config = ConfigDict(extra="forbid", from_attributes=True)
+   
 
     id: int
     created_at: datetime
