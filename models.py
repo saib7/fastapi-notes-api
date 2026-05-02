@@ -5,6 +5,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class NoteBase(BaseModel):
     """Fields shared between note creation requests and full note representation."""
+    model_config = ConfigDict(extra="forbid")
+
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1, max_length=10_000)
 
@@ -21,10 +23,12 @@ class NoteCreate(NoteBase):
 class Note(NoteBase):
     """Full representation of a note, including server-generated fields.
 
-    This is what the server returns to clients. `from_attributes=True`
-    allows construction from ORM objects in addition to dicts.
+    `from_attributes=True` allows construction from ORM objects in addition to dicts.
     """
-    model_config = ConfigDict(from_attributes=True)
+    # Pydantic config is replaced (not merged) on inheritance, so we restate
+    # extra="forbid" alongside from_attributes=True.
+    model_config = ConfigDict(extra="forbid", from_attributes=True)
+   
 
     id: int
     created_at: datetime
