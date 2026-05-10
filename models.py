@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class NoteBase(BaseModel):
     """Fields shared between note creation requests and full note representation."""
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid") # Forbid extra fields in all subclasses by default. Means clients can't send fields we don't expect, and we don't accidentally allow them to set server-generated fields like `id` or `created_at` in create/update requests.
 
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1, max_length=10_000)

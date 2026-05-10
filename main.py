@@ -55,3 +55,31 @@ async def create_note(note_in: NoteCreate) -> Note:
     notes_db.append(new_note)
     next_id += 1
     return new_note
+
+
+@app.put("/notes/{note_id}", response_model=Note)
+async def update_note(note_id: int, note_in: NoteCreate) -> Note:
+    """Replace an existing note's title and content. Returns 404 if not found."""
+    existing = find_note_by_id(note_id)
+    if existing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Note with id {note_id} not found",
+        )
+    existing.title = note_in.title
+    existing.content = note_in.content
+    existing.updated_at = datetime.now(timezone.utc)
+    return existing
+
+
+@app.delete("/notes/{note_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_note(note_id: int) -> None:
+    """Delete the note with the given id. Returns 404 if not found."""
+    existing = find_note_by_id(note_id)
+    if existing is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Note with id {note_id} not found",
+        )
+    notes_db.remove(existing)
+    return None
