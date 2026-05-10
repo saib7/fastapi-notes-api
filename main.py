@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, status
+from fastapi import FastAPI, HTTPException, status
 
 from models import Note, NoteCreate
 
@@ -13,10 +13,31 @@ notes_db: list[Note] = []
 next_id: int = 1
 
 
+# helper function to find a note by ID
+def find_note_by_id(note_id: int) -> Note | None:
+    """Return the note with the given id, or None if not found."""
+    for note in notes_db:
+        if note.id == note_id:
+            return note
+    return None
+
+
 @app.get("/notes", response_model=list[Note])
 async def list_notes() -> list[Note]:
     """Return all notes currently stored."""
     return notes_db
+
+
+@app.get("/notes/{note_id}", response_model=Note)
+async def get_note(note_id: int) -> Note:
+    """Return the note with the given id, or 404 if not found."""
+    note = find_note_by_id(note_id)
+    if note is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Note with id {note_id} not found",
+        )
+    return note
 
 
 @app.post("/notes", response_model=Note, status_code=status.HTTP_201_CREATED)
