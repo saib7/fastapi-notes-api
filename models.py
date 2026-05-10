@@ -5,7 +5,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class NoteBase(BaseModel):
     """Fields shared between note creation requests and full note representation."""
-    model_config = ConfigDict(extra="forbid") # Forbid extra fields in all subclasses by default. Means clients can't send fields we don't expect, and we don't accidentally allow them to set server-generated fields like `id` or `created_at` in create/update requests.
+
+    model_config = ConfigDict(
+        extra="forbid"
+    )  # Forbid extra fields in all subclasses by default. Means clients can't send fields we don't expect, and we don't accidentally allow them to set server-generated fields like `id` or `created_at` in create/update requests.
 
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1, max_length=10_000)
@@ -17,6 +20,7 @@ class NoteCreate(NoteBase):
     Server-generated fields (id, created_at, updated_at) are deliberately
     excluded — clients don't get to set those.
     """
+
     pass
 
 
@@ -25,10 +29,10 @@ class Note(NoteBase):
 
     `from_attributes=True` allows construction from ORM objects in addition to dicts.
     """
+
     # Pydantic config is replaced (not merged) on inheritance, so we restate
     # extra="forbid" alongside from_attributes=True.
     model_config = ConfigDict(extra="forbid", from_attributes=True)
-   
 
     id: int
     created_at: datetime
